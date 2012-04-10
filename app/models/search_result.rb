@@ -2,7 +2,7 @@
 class SearchResult
   
   BASE_URL = 'http://www.allabolag.se/?what='
-  attr_accessor :query, :page, :result
+  attr_accessor :query, :page, :company_name, :reg_number
   
   @@logger = Logger.new(File.join(Rails.root, 'log/results.log'))
   
@@ -16,7 +16,7 @@ class SearchResult
       @page = agent.get(SearchResult::BASE_URL << @query)
 
       if result_found
-        @@logger.info "New company found -- query: #{@query}, result: #{@result}"
+        @@logger.info "New company found -- query: #{@query}, company_name: #{@company_name}, reg. code: #{@reg_number}"
         write
       else
         @@logger.info "Search returned no results -- query: #{@query}"
@@ -29,12 +29,14 @@ class SearchResult
     end
   
     def write
-      Rails.cache.write @query, @result
+      Rails.cache.write @query, @reg_number
+      @reg_number
     end
     
     def result_found
-      @result = @page.at('h2.hitlistLink').children.first.content
-      !@page.at('td.text16red') && !!@result.downcase.match(@query.downcase)
+      @company_name = @page.at('h2.hitlistLink').children.first.content
+      @reg_number   = @page.at('td.text11grey6').to_s.match(/(\d+-\d+)/)[1]
+      !@page.at('td.text16red') && !!@company_name.downcase.match(@query)
     end
     
   end

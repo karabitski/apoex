@@ -1,0 +1,5 @@
+<%= form_tag '/', :method => :get do %>
+  <%= text_field_tag 'query', params[:query] || 'Not found' %>
+  <%= submit_tag 'Find' %>  
+<% end %>
+<span>Reg.number: <%= @reg_number %></span>
